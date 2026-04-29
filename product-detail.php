@@ -1,26 +1,23 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 require 'config/db.php';
-require 'includes/header.php';
-
 $product_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-$message = '';
 
 if (!$product_id) {
     header("Location: index.php");
     exit;
 }
-
-// Get product details
 $query = "SELECT p.*, c.name as category_name FROM product p LEFT JOIN categories c ON p.category_id = c.id WHERE p.id = $product_id";
 $result = $conn->query($query);
 $product = $result->fetch_assoc();
-
 if (!$product) {
     header("Location: index.php");
     exit;
 }
-
-// Handle add to cart
+require 'includes/header.php';
+$message = '';
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_to_cart'])) {
     $quantity = isset($_POST['quantity']) ? (int)$_POST['quantity'] : 1;
     

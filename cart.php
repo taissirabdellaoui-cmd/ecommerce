@@ -1,10 +1,8 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 require 'config/db.php';
-require 'includes/header.php';
-
-$message = '';
-
-// Handle remove from cart
 if (isset($_GET['remove'])) {
     $remove_id = (int)$_GET['remove'];
     $_SESSION['cart'] = array_filter($_SESSION['cart'], function($item) use ($remove_id) {
@@ -14,8 +12,6 @@ if (isset($_GET['remove'])) {
     header("Location: cart.php");
     exit;
 }
-
-// Handle update quantity
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_cart'])) {
     foreach ($_POST['quantity'] as $product_id => $quantity) {
         $quantity = (int)$quantity;
@@ -39,7 +35,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_cart'])) {
     $message = '<div class="alert alert-success alert-dismissible fade show" role="alert">Cart updated!<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>';
 }
 
-// Calculate totals
+if (!isset($message)) {
+    $message = '';
+}
+require 'includes/header.php';
 $subtotal = 0;
 foreach ($_SESSION['cart'] as $item) {
     $subtotal += $item['price'] * $item['quantity'];

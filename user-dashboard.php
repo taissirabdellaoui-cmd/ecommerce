@@ -1,11 +1,14 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 require 'config/db.php';
-require 'includes/header.php';
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php?redirect=user-dashboard.php");
     exit;
 }
+require 'includes/header.php';
 
 $user_id = $_SESSION['user_id'];
 $user = $conn->query("SELECT * FROM client WHERE id = $user_id")->fetch_assoc();

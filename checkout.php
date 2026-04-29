@@ -1,6 +1,8 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 require 'config/db.php';
-require 'includes/header.php';
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php?redirect=checkout");
@@ -13,61 +15,58 @@ if (count($_SESSION['cart']) == 0) {
 }
 
 $message = '';
-
-// Calculate totals
+$order_id = null;
 $subtotal = 0;
 foreach ($_SESSION['cart'] as $item) {
     $subtotal += $item['price'] * $item['quantity'];
 }
 $tax = $subtotal * 0.08;
 $total = $subtotal + $tax;
-
-// Get user info
 $user_id = $_SESSION['user_id'];
 $user_result = $conn->query("SELECT * FROM client WHERE id = $user_id");
 $user = $user_result->fetch_assoc();
-
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $address = trim($_POST['address'] ?? $user['adress']);
     
     if (empty($address)) {
         $message = '<div class="alert alert-danger">Delivery address is required.</div>';
     } else {
-        // Create order
         $order_date = date('Y-m-d');
         $address = $conn->real_escape_string($address);
-        $total = number_format($total, 2);
-        
-        $sql = "INSERT INTO orders (client_id, order_date, status, total_price) VALUES ($user_id, '$order_date', 'pending', $total)";
+        $total_price = floatval($total);
+        $user_id_safe = intval($user_id);
+        $sql = "INSERT INTO orders (`client_id`, `order_date`, `status`, `total_price`) VALUES ({$user_id_safe}, '{$order_date}', 'pending', {$total_price})";
         
         if ($conn->query($sql)) {
             $order_id = $conn->insert_id;
-            
-            // Add order items
+            $items_inserted = true;
             foreach ($_SESSION['cart'] as $item) {
-                $product_id = $item['id'];
-                $quantity = $item['quantity'];
-                $unit_price = $item['price'];
+                $product_id = intval($item['id']);
+                $quantity = intval($item['quantity']);
+                $unit_price = floatval($item['price']);
                 
-                $sql = "INSERT INTO order_items (order_id, product_id, quantity, unit_price) VALUES ($order_id, $product_id, $quantity, $unit_price)";
-                $conn->query($sql);
+                $item_sql = "INSERT INTO order_items (`order_id`, `product_id`, `quantity`, `unit_price`) VALUES ({$order_id}, {$product_id}, {$quantity}, {$unit_price})";
+                if (!$conn->query($item_sql)) {
+                    $items_inserted = false;
+                    $message .= '<div class="alert alert-warning">Warning: Could not insert order item - ' . $conn->error . '</div>';
+                }
             }
-            
-            // Create shipment
-            $sql = "INSERT INTO shipment (order_id, status, adress_livraison) VALUES ($order_id, 'preparing', '$address')";
-            $conn->query($sql);
-            
-            // Clear cart
+            $ship_sql = "INSERT INTO shipment (`order_id`, `status`, `adress_livraison`) VALUES ({$order_id}, 'preparing', '{$address}')";
+            if (!$conn->query($ship_sql)) {
+                $message .= '<div class="alert alert-warning">Warning: Could not create shipment record - ' . $conn->error . '</div>';
+            }
             $_SESSION['cart'] = [];
-            
-            // Redirect to confirmation
-            header("Location: order-confirmation.php?order_id=$order_id");
-            exit;
+            if ($items_inserted) {
+                header("Location: order-confirmation.php?order_id=$order_id");
+                exit;
+            }
         } else {
-            $message = '<div class="alert alert-danger">Error creating order: ' . $conn->error . '</div>';
+            $message = '<div class="alert alert-danger">Error creating order:<br>' . htmlspecialchars($conn->error) . '<br><small>SQL: ' . htmlspecialchars($sql) . '</small></div>';
         }
     }
 }
+require 'includes/header.php';
+?>
 ?>
 
 <div class="container">

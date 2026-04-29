@@ -1,7 +1,6 @@
 <?php
+session_start();
 require 'config/db.php';
-
-// Handle login BEFORE including header (before any output)
 $message = '';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -14,15 +13,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         
         if ($result && $result->num_rows > 0) {
             $user = $result->fetch_assoc();
-            
-            // Verify password
             if (password_verify($password, $user['password'])) {
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['user_name'] = $user['name'];
                 $_SESSION['user_email'] = $user['email'];
                 $_SESSION['is_admin'] = $user['is_admin'];
-                
-                // Redirect admin to dashboard, others to checkout or home
                 if ($user['is_admin']) {
                     header("Location: admin/dashboard.php");
                 } else {
@@ -34,11 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     }
 }
-
-// NOW include header after redirect logic
 require 'includes/header.php';
-
-// Prepare error/success messages to display
 if (isset($_GET['registered'])) {
     $message = '<div class="alert alert-success alert-dismissible fade show" role="alert">
                     Registration successful! Please log in with password: <strong>12345678</strong>
@@ -88,11 +79,7 @@ if (isset($_GET['registered'])) {
                 </div>
             </div>
             
-            <div class="alert mt-3" style="background-color: rgba(0, 212, 255, 0.1); border: 2px solid #00d4ff; border-radius: 4px; color: #b0b0b0;">
-                <strong style="color: #00d4ff; text-transform: uppercase; letter-spacing: 1px;">⚡ Demo Accounts:</strong><br>
-                <span style="font-size: 0.9rem;"><strong style="color: #fff;">Email:</strong> jean.dupont@email.com</span><br>
-                <span style="font-size: 0.9rem;"><strong style="color: #fff;">Password (all):</strong> 12345678</span>
-            </div>
+
         </div>
     </div>
 </div>

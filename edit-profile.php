@@ -1,6 +1,8 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 require 'config/db.php';
-require 'includes/header.php';
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
@@ -9,6 +11,8 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 $user = $conn->query("SELECT * FROM client WHERE id = $user_id")->fetch_assoc();
+require 'includes/header.php';
+
 $message = '';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -32,7 +36,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             Profile updated successfully!
                             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>';
-            // Refresh user data
             $user = $conn->query("SELECT * FROM client WHERE id = $user_id")->fetch_assoc();
         } else {
             $message = '<div class="alert alert-danger">Error updating profile: ' . $conn->error . '</div>';

@@ -12,7 +12,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $confirm_password = $_POST['confirm_password'] ?? '';
     $address = trim($_POST['address'] ?? '');
 
-    // Validation
     if (empty($name)) $errors[] = 'Name is required';
     if (empty($email)) $errors[] = 'Email is required';
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = 'Invalid email format';
@@ -21,7 +20,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if ($password !== $confirm_password) $errors[] = 'Passwords do not match';
 
     if (empty($errors)) {
-        // Check if email already exists
         $check = $conn->query("SELECT id FROM client WHERE email = '" . $conn->real_escape_string($email) . "'");
         if ($check->num_rows > 0) {
             $errors[] = 'Email already registered';

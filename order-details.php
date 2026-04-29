@@ -1,6 +1,8 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 require 'config/db.php';
-require 'includes/header.php';
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
@@ -21,7 +23,7 @@ if (!$order) {
     header("Location: user-dashboard.php");
     exit;
 }
-
+require 'includes/header.php';
 $items = $conn->query("SELECT oi.*, p.name FROM order_items oi JOIN product p ON oi.product_id = p.id WHERE oi.order_id = $order_id")->fetch_all(MYSQLI_ASSOC);
 $shipment = $conn->query("SELECT * FROM shipment WHERE order_id = $order_id")->fetch_assoc();
 $client = $conn->query("SELECT * FROM client WHERE id = $user_id")->fetch_assoc();

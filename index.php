@@ -1,15 +1,14 @@
+
 <?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 require 'config/db.php';
 require 'includes/header.php';
-
-// Get all categories
 $categories_result = $conn->query("SELECT * FROM categories");
 $categories = $categories_result->fetch_all(MYSQLI_ASSOC);
-
-// Get filter
 $category_filter = isset($_GET['category']) ? (int)$_GET['category'] : 0;
-
-// Get products
 $query = "SELECT p.*, c.name as category_name FROM product p LEFT JOIN categories c ON p.category_id = c.id";
 if ($category_filter) {
     $query .= " WHERE p.category_id = $category_filter";

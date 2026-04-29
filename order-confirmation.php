@@ -1,22 +1,23 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 require 'config/db.php';
-require 'includes/header.php';
 
 $order_id = isset($_GET['order_id']) ? (int)$_GET['order_id'] : 0;
-
 if (!$order_id) {
     header("Location: index.php");
     exit;
 }
 
 $order = $conn->query("SELECT * FROM orders WHERE id = $order_id")->fetch_assoc();
-$items = $conn->query("SELECT oi.*, p.name FROM order_items oi JOIN product p ON oi.product_id = p.id WHERE oi.order_id = $order_id")->fetch_all(MYSQLI_ASSOC);
-$shipment = $conn->query("SELECT * FROM shipment WHERE order_id = $order_id")->fetch_assoc();
-
 if (!$order) {
     header("Location: index.php");
     exit;
 }
+require 'includes/header.php';
+$items = $conn->query("SELECT oi.*, p.name FROM order_items oi JOIN product p ON oi.product_id = p.id WHERE oi.order_id = $order_id")->fetch_all(MYSQLI_ASSOC);
+$shipment = $conn->query("SELECT * FROM shipment WHERE order_id = $order_id")->fetch_assoc();
 ?>
 
 <div class="container">
