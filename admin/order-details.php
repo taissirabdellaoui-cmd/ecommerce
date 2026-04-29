@@ -1,13 +1,15 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 require '../config/db.php';
 
-// Admin check (MUST BE BEFORE ANY OUTPUT)
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['is_admin']) || $_SESSION['is_admin'] != 1) {
     header("Location: ../login.php?redirect=admin/dashboard.php");
     exit;
 }
 
-require '../includes/header.php';
+require 'header-admin.php';
 
 $order_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
@@ -100,4 +102,4 @@ $shipment = $conn->query("SELECT * FROM shipment WHERE order_id = $order_id")->f
     <a href="manage-orders.php" class="btn btn-outline-secondary mt-3">Back to Orders</a>
 </div>
 
-<?php require '../includes/footer.php'; ?>
+<?php require 'footer-admin.php'; ?>

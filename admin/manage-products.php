@@ -1,17 +1,18 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 require '../config/db.php';
 
-// Admin check (MUST BE BEFORE ANY OUTPUT)
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['is_admin']) || $_SESSION['is_admin'] != 1) {
     header("Location: ../login.php?redirect=admin/dashboard.php");
     exit;
 }
 
-require '../includes/header.php';
+require 'header-admin.php';
 
 $message = '';
 
-// Handle product deletion
 if (isset($_GET['delete'])) {
     $product_id = (int)$_GET['delete'];
     if ($conn->query("DELETE FROM product WHERE id = $product_id")) {
@@ -69,4 +70,4 @@ $products = $conn->query("SELECT p.*, c.name as category_name FROM product p LEF
     <a href="dashboard.php" class="btn btn-outline-secondary mt-3">Back to Dashboard</a>
 </div>
 
-<?php require '../includes/footer.php'; ?>
+<?php require 'footer-admin.php'; ?>

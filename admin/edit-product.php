@@ -1,13 +1,15 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 require '../config/db.php';
 
-// Admin check (MUST BE BEFORE ANY OUTPUT)
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['is_admin']) || $_SESSION['is_admin'] != 1) {
     header("Location: ../login.php?redirect=admin/dashboard.php");
     exit;
 }
 
-require '../includes/header.php';
+require 'header-admin.php';
 
 $product_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
@@ -37,7 +39,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (empty($name) || $price <= 0) {
         $message = '<div class="alert alert-danger">Name and price are required.</div>';
     } else {
-        // Handle image upload
         if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
             $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
             $filename = $_FILES['image']['name'];
@@ -49,7 +50,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     mkdir($upload_dir, 0755, true);
                 }
                 
-                // Delete old image
                 if ($product['image'] && file_exists($upload_dir . $product['image'])) {
                     unlink($upload_dir . $product['image']);
                 }
@@ -138,4 +138,4 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </div>
 </div>
 
-<?php require '../includes/footer.php'; ?>
+<?php require 'footer-admin.php'; ?>

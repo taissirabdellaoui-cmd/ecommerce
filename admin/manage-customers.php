@@ -1,17 +1,18 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 require '../config/db.php';
 
-// Admin check (MUST BE BEFORE ANY OUTPUT)
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['is_admin']) || $_SESSION['is_admin'] != 1) {
     header("Location: ../login.php?redirect=admin/dashboard.php");
     exit;
 }
 
-require '../includes/header.php';
+require 'header-admin.php';
 
 $message = '';
 
-// Handle customer deletion
 if (isset($_GET['delete'])) {
     $customer_id = (int)$_GET['delete'];
     if ($conn->query("DELETE FROM client WHERE id = $customer_id")) {
@@ -63,4 +64,4 @@ $customers = $conn->query("SELECT c.*, COUNT(o.id) as total_orders FROM client c
     <a href="dashboard.php" class="btn btn-outline-secondary mt-3">Back to Dashboard</a>
 </div>
 
-<?php require '../includes/footer.php'; ?>
+<?php require 'footer-admin.php'; ?>

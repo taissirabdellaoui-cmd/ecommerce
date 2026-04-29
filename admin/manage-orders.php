@@ -1,17 +1,18 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 require '../config/db.php';
 
-// Admin check (MUST BE BEFORE ANY OUTPUT)
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['is_admin']) || $_SESSION['is_admin'] != 1) {
     header("Location: ../login.php?redirect=admin/dashboard.php");
     exit;
 }
 
-require '../includes/header.php';
+require 'header-admin.php';
 
 $message = '';
 
-// Handle status update
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_status'])) {
     $order_id = (int)$_POST['order_id'];
     $status = $conn->real_escape_string($_POST['status']);
@@ -77,4 +78,4 @@ $orders = $conn->query("SELECT o.*, c.name FROM orders o JOIN client c ON o.clie
     <a href="dashboard.php" class="btn btn-outline-secondary mt-3">Back to Dashboard</a>
 </div>
 
-<?php require '../includes/footer.php'; ?>
+<?php require 'footer-admin.php'; ?>
